@@ -1,0 +1,111 @@
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Temperatura</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        label, input, button {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100px;
+            padding: 5px;
+            margin-top: 5px;
+        }
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Configuração do Controle de Temperatura</h1>
+    
+    <label for="ki">Ki:</label>
+    <input type="number" id="ki" name="ki">
+
+    <label for="kp">Kp:</label>
+    <input type="number" id="kp" name="kp">
+
+    <label for="kd">Kd:</label>
+    <input type="number" id="kd" name="kd">
+
+    <label for="mode">Modo de Operação (Automático):</label>
+    <input type="checkbox" id="mode" name="mode">
+
+    <button id="sendButton">Enviar</button>
+    <button id="clearButton">Limpar</button>
+
+    <script>
+        // Função para obter valores da API e preencher os campos
+        function fetchValues() {
+            fetch('http://localhost:6008/control') // Substitua por sua URL de API
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('ki').value = data.KI;
+                    document.getElementById('kp').value = data.KP;
+                    document.getElementById('kd').value = data.KD;
+                    document.getElementById('mode').checked = data.MODE;
+                })
+                .catch(error => console.error('Erro ao obter dados:', error));
+        }
+
+        // Função para enviar os valores para a API
+        function sendValues() {
+            const ki = parseFloat(document.getElementById('ki').value); // Garante que é um número
+            const kp = parseFloat(document.getElementById('kp').value);
+            const kd = parseFloat(document.getElementById('kd').value);
+            const mode = document.getElementById('mode').checked; // Retorna booleano
+
+            const data = {
+
+                KI: ki,
+                KD: kd,
+                KP: kp,
+                MODE: mode
+            };
+
+            console.log(data);
+
+            fetch('http://localhost:6008/control', { // Substitua por sua URL de API
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => console.log('Sucesso:', data))
+            .catch(error => console.error('Erro ao enviar dados:', error));
+        }
+
+        // Função para limpar os valores
+        function clearValues() {
+            fetch('SUA_API_URL_CLEAR', { // Substitua por sua URL de API para limpar
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('KI').value = '';
+                document.getElementById('KP').value = '';
+                document.getElementById('KD').value = '';
+                document.getElementById('MODE').checked = false;
+                console.log('Campos limpos e API chamada:', data);
+            })
+            .catch(error => console.error('Erro ao limpar dados:', error));
+        }
+
+        document.getElementById('sendButton').addEventListener('click', sendValues);
+        document.getElementById('clearButton').addEventListener('click', clearValues);
+
+        // Chamar fetchValues para carregar dados iniciais ao carregar a página
+        fetchValues();
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,17 @@
+ npm init -y   
+ npm install express
+ npm install --save nodemon
+ npm install mysql
+npm install express-handlebars --save
+
+nodemon start index.js
+
+
+ //my sql
+  open 
+  mysql -u root -p
+  Entra com a senha
+  SHOW DATABASES;
+  USE DATABASE
+
+  DROP TABLE // exclui tabela 
