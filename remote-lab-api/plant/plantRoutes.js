@@ -12,7 +12,7 @@ router.get('/', (req, res, next) => {
 router.post('/', (req, res, next) => {
     const parameters = req.body;
     const result = plantModel.post(parameters);
-    console.log("parameters");
+    console.log(parameters);
     result.then( registered => res.status(201).json(registered)).catch(error => res.status(400).json(error.message));
 
 });

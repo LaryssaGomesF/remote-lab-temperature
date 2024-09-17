@@ -11,8 +11,8 @@ class Tables {
             CREATE TABLE IF NOT EXISTS plant_data(
             id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
             time INT,
-            temperature INT,
-            erro INT
+            temperature DOUBLE,
+            erro DOUBLE
             );
         `;
         this.conexao.query(sql, (error) => {
@@ -25,35 +25,46 @@ class Tables {
 
     createTableControlConstants() {
         const sql = `
-            CREATE TABLE IF NOT EXISTS control(
+          CREATE TABLE IF NOT EXISTS control(
             id INT NOT NULL PRIMARY KEY,
-            KI INT DEFAULT 1,
-            KD INT DEFAULT 1,
-            KP INT DEFAULT 1,
-            MODE BOOLEAN DEFAULT FALSE 
-            );
+            ki  DOUBLE ,
+            kd  DOUBLE ,
+            kp  DOUBLE ,
+            setpoint  DOUBLE ,
+            mode BOOLEAN DEFAULT FALSE
+          );
         `;
-
+      
+        const checkIfRecordExistsSql = 'SELECT * FROM control WHERE id = 1';
         const insertInitialRecordSql = `
-        INSERT INTO control (id,KI, KD, KP, MODE) VALUES (1, 1, 1, 1, FALSE)
-        ON DUPLICATE KEY UPDATE KI = VALUES(KI), KD = VALUES(KD), KP = VALUES(KP),  id = VALUES(id), MODE = VALUES(MODE);
-    `;
-
+          INSERT INTO control (id, ki, kd, kp, mode, setpoint) VALUES (1, 0.0, 0.0, 0.0, 0.0, FALSE)
+        `;
+      
         this.conexao.query(sql, (error) => {
-            if (error) {
-                console.log("Erro create table control");
-                console.log(error);
-            } else {
-                this.conexao.query(insertInitialRecordSql, (error) => {
+          if (error) {
+            console.log("Erro create table control");
+            console.log(error);
+          } else {
+            this.conexao.query(checkIfRecordExistsSql, (error, results) => {
+              if (error) {
+                console.error('Erro ao verificar registro inicial:', error);
+              } else {
+                if (results.length === 0) {
+                  this.conexao.query(insertInitialRecordSql, (error) => {
                     if (error) {
-                        console.error('Erro ao inserir registro inicial:', error);
+                      console.error('Erro ao inserir registro inicial:', error);
                     } else {
-                        console.log('Tabela criada e registro inicial inserido.');
+                      console.log('Tabela criada e registro inicial inserido.');
                     }
-                });
-            }
-        })
-    }
+                  });
+                } else {
+                  console.log('Registro inicial já existe.');
+                }
+              }
+            });
+          }
+        });
+      }
 
 
 }

@@ -5,28 +5,27 @@ const control = require('../control/controlModel')
 class PlantModel {
 
     get() {
-        const sql = 'SELECT time, temperature FROM plant_data';
+        const sql = 'SELECT time, temperature, erro FROM plant_data';
         return new Promise((resolve, reject) => {
             db.query(sql, {}, (error, resposta) => {
                 if (error) {
                     console.log("Error ao recuperar dados");
                     reject(error);
                 }
-                console.log("Dados recuperados com sucesso");
                 resolve(resposta);
             });
         });
     }
 
     delete() {
-        const sql = 'DELETE * FROM plant_data';
+        const sql = 'DELETE FROM plant_data';
         return new Promise((resolve, reject) => {
             db.query(sql, {}, (error, resposta) => {
                 if (error) {
                     console.log("Error ao deletar dados");
+                    console.log(error);
                     reject(error);
                 }
-                console.log("Dados deletados com sucesso");
                 resolve(resposta);
             });
         });
@@ -46,9 +45,8 @@ class PlantModel {
                     console.error("Erro ao inserir ou atualizar parâmetros:", error);
                     reject(error);
                 } else {
-                    console.log("Parâmetros inseridos ou atualizados com sucesso");
                     control.get().then(data => {
-                        // Retorna os dados da outra tabela após o sucesso da inserção/atualização
+
                         resolve(data);
                     })
                     .catch(err => {
