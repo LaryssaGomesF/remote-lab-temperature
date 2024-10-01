@@ -1,69 +1,107 @@
 #include <SPI.h>
 #include <Ethernet.h>
-#include <ArduinoJson.h>  // Inclua a biblioteca ArduinoJson
+#include <ArduinoJson.h>
 
-
-byte mac[] = { 0x54, 0x34, 0x41, 0x30, 0x30, 0x31 };  // Endereço MAC
-IPAddress ip(192, 168, 0, 145);                       // Endereço IP do Arduino
+//configurações ethernet
+byte mac[] = { 0x54, 0x34, 0x41, 0x30, 0x30, 0x31 }; 
+IPAddress ip(192, 168, 0, 145);          
 EthernetClient client;
 
-const char* serverIP = "192.168.0.114";  // IP do servidor local
+//variaveis para ethernet
+const char* serverIP = "192.168.0.110";  // IP do servidor local
 const int serverPort = 6008;             // Porta do servidor
-int time = 0,time_ant=0;  
-float temperatura=0; 
-float setpoint=0,kp=0,ki=0,kd=0,mode=0,erro=0,P=0,I=0,D=0,PID=0,erro_ant=0;                         // Contagem de tempo
+
+//pinos 
+#define pCONTROLE 3  // Define o pino digital 3 do Arduino como o pino de controle do sinal PWM do cooler
+#define pinLamp 9    // Define o pino digital 9 do Arduino como o pino de controle PWM da lâmpada
+
+
+float PWMCooler = 20,PWMLamp = 0,PID=0,temperatura = 0,kp=0,ki=0,E=0,mode=0; 
+unsigned long previousMillis = 0,currentMillis=0;
+const long interval = 850;
+const int LM35_3 = A7; 
+
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Ethernet.begin(mac, ip);
   delay(10);
+  pinMode(pCONTROLE, OUTPUT);
+  pinMode(pinLamp, OUTPUT);
+  pwm25kHzBegin();
 }
 
 void loop() {
-  time=millis()/1000;
-  if(time-time_ant>=1){
-  lerTemperatura();
-  net();
-  if(mode==1){Controlador_PID();}
-  Serial.print("PID: ");
-  Serial.println(PID);
-  time_ant=time;
-  }
+
+    currentMillis = millis();
+    if (currentMillis - previousMillis >= interval) {
+        previousMillis = currentMillis;
+        pwmDuty(PWMCooler);
+        temperatura = Leitura3(LM35_3);
+        if(mode==0){analogWrite(pinLamp, PWMLamp);}
+        else{PID=controladorPI(PWMLamp,temperatura,kp,ki,(interval/1000));analogWrite(pinLamp,PID);}
+        net();
+    }
 }
 
-void lerTemperatura() {
-  temperatura = (analogRead(A5) * (5.0 / 1023.0)) * 100;  // Converte para graus Celsius
+float Leitura3(int analogInPin3)
+  {
+  float sensorValue3 = 0;     
+  float outputValue3 = 0;   
+  float ReadValue3 = 0;
+  float Valorlido3 = 0;
+  int ReadTimes3 = 0;
+  for (int k =0; k < 50; k++)
+    {
+    ReadValue3 = (float(analogRead(analogInPin3))*5/(1023))/0.01;
+      Valorlido3 = round(ReadValue3*10)/10.0;
+      sensorValue3 = sensorValue3 + Valorlido3;
+      ReadTimes3++;         
+    }
+  outputValue3 =round((sensorValue3 / ReadTimes3)*10)/10.0;
+  return outputValue3;
+  }
+
+// Função que aumenta a frequência do sinal PWM para 25kHz
+void pwm25kHzBegin() {
+  TCCR2A = 0;                                             // TC2 Control Register A
+  TCCR2B = 0;                                             // TC2 Control Register B
+  TIMSK2 = 0;                                             // TC2 Interrupt Mask Register
+  TIFR2 = 0;                                              // TC2 Interrupt Flag Register
+  TCCR2A |= (1 << COM2B1) | (1 << WGM21) | (1 << WGM20);  // OC2B cleared/set on match when up/down counting, fast PWM
+  TCCR2B |= (1 << WGM22) | (1 << CS21);                   // prescaler 8
+  OCR2A = 79;                                             // TOP overflow value (Hz)
+  OCR2B = 26;
+}
+void pwmDuty(byte ocrb) {
+  OCR2B = ocrb;  // PWM Width (duty)
 }
 
-void Controlador_PID() {
-  erro = setpoint - temperatura;
-  P = kp * erro;
-  I = I + (ki * erro);
-  if (I > 255) {
-    I = 255;
-  }
-  if (I < 0) {
-    I = 0;
-  }
+float controladorPI(float setpoint, float feedback, float Kp, float Ki, float T) {
+  static float E_prev = 0.0;
+  static float U_prev = 0.0;
+   E = setpoint - feedback;
 
-  // Cálculo do termo derivativo
-  D = kd * (erro - erro_ant);
+  float U = U_prev + Kp * (E - E_prev) + Ki * T * E;
+  if(U>255){U=255;}if(U<0){U=0;}
+  //U = constrain(U, 0, 255);
 
-  //Cálculo do PID 
-  PID = P + I + D; erro_ant = erro; // Atualiza o erro anterior
-  if (PID > 255) { PID = 255; } if (PID < 0) { PID = 0; }
+  E_prev = E;
+  U_prev = U;
+
+  return U;
 }
 
 void net() { 
   if (client.connect(serverIP, serverPort)) {
-    String postData = String("t=") + time + "&tp=" + temperatura + "&s=" + setpoint + "&e=" + erro;
+    String postData = String("t=") + currentMillis + "&tp=" + temperatura + "&s=" + PWMLamp + "&e=" + E;
     String httpRequest = "POST /plant HTTP/1.1\r\n" 
                          "Host: " + String(serverIP) + "\r\n"
                          "Content-Type: application/x-www-form-urlencoded\r\n"
                          "Content-Length: " + String(postData.length()) + "\r\n"
                          "Connection: close\r\n\r\n" + postData;
     client.print(httpRequest);
-    delay(1000);
+    delay(10);
 
     if (client.connected()) {
       String response = "";
@@ -82,23 +120,10 @@ void net() {
         // Extraindo os valores específicos do JSON
         kp = doc["kp"];         // Lê o valor de "kp"
         ki = doc["ki"];         // Lê o valor de "ki"
-        kd = doc["kd"];
+        //kd = doc["kd"];
         mode = doc["m"];         // Lê o valor de "kd"
-        setpoint = doc["s"];
+        PWMLamp = doc["s"];
 
-  
-      
-        Serial.println("Dados JSON recebidos:");
-        Serial.print("Kp: ");
-        Serial.println(kp);
-        Serial.print("Ki: ");
-        Serial.println(ki);
-        Serial.print("Kd: ");
-        Serial.println(kd);
-        Serial.print("MODE: ");
-        Serial.println(mode);
-        Serial.print("SET: ");
-        Serial.println(setpoint);
       } 
     } 
     client.stop();  // Fecha a conexão
