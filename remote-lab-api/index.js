@@ -13,6 +13,8 @@ app.set('view engine', 'handlebars')
 const plantRoutes = require("./plant/plantRoutes");
 const controlRoutes = require("./control/controlRoutes");
 const dashboardRoutes = require("./dashboard/dashboardRoutes");
+const path = require('path');
+
 
 
 const db = require('./db');
@@ -23,6 +25,7 @@ tables.init(db);
 app.use('/plant', plantRoutes);
 app.use('/control', controlRoutes);
 app.use('/dashboard', dashboardRoutes);
+app.use('/imagens', express.static(path.join(__dirname, 'imagens')));
 
 app.use((req, res, next) => {
     const error = new Error('Not Found');

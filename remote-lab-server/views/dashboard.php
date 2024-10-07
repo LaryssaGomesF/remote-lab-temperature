@@ -1,3 +1,6 @@
+
+<!DOCTYPE html>
+
 <html lang="pt-BR">
 
 <head>
@@ -9,8 +12,7 @@
     <title>Controle de Temperatura</title>
     <style>
         body {
-            padding: 0px;
-            margin: 0px;
+            margin-top: 5px;
         }
 
         label {
@@ -97,7 +99,6 @@
             flex-direction: row;
             justify-content: start;
             align-items: center;
-            margin: 20px;
         }
 
         .column {
@@ -107,7 +108,6 @@
             height: 100%;
 
         }
-    
 
         .column-center {
             display: flex;
@@ -115,23 +115,6 @@
             justify-content: center;
             align-items: center;
 
-        }
-
-        .header {
-            background-color: #D9D9D9;
-            width: 100%;
-            height: 100px;
-        }
-        .baseboard-1 {
-            background-color: #333333;
-            width: 100%;
-            height: 70px;
-        }
-
-        .baseboard-2 {
-            background-color: #4A101D;
-            width: 100%;
-            height: 30px;
         }
 
 
@@ -168,22 +151,9 @@
 
 
         .title-2 {
-            font-family:  "Playfair Display";
-            font-size: 20px;
-            color: #4A101D;
-        }
-
-         .title-3 {
-            font-family:  "Playfair Display";
-            font-size: 20px;
-            color: #1f1e1e;
-        }
-        
-        .title-4 {
             font-family: "Bebas Neue";
             font-size: 35px;
         }
-
 
         .subtitle-1 {
             font-family: "Lato", sans-serif;
@@ -231,23 +201,10 @@
 
         }
 
-        #chartContainerActuador {
-            height: 250px;
-            width: 100%;
-
-        }
-
         .camera-image {
             margin: 10px;
             width: 80%;
             height: auto;
-        }
-
-        .logo-image {
-            margin: 10px;
-            margin-left: 50px;
-            width: auto;
-            height: 70px;
         }
 
         .divider {
@@ -349,26 +306,10 @@
 
 <body style="background:#F5F5F5">
 
-    <div class="header">
 
-        <div class="row-space-between">
-
-            <img src="/imagens/logo-labcam.png" alt="Logo labcam" class="logo-image ">
-            
-
-            <h1 class="title-1">Bancada Controle de Temperatura - LABCAM</h1>
-
-            <div class="row-auto " >
-                <h1 class="title-2"> Dashboard</h1>
-                <div class="divider"></div>
-                <h1 class="title-3"> Tutorial</h1>
-            </div>
-
-        </div>
-
-
+    <div class="row-center">
+        <h1 class="title-1">Bancada Controle de Temperatura - LABCAM</h1>
     </div>
-
 
     <div class="row-space-around">
         <div class="card">
@@ -380,29 +321,29 @@
 
                 <div class="column-center">
                     <span class="text-body-2">KP</span>
-                    <span class="title-4" id="kpText"></span>
+                    <span class="title-2" id="kpText"></span>
 
                 </div>
 
                 <div class="column-center">
                     <span class="text-body-2">KI</span>
-                    <span class="title-4" id="kiText"></span>
+                    <span class="title-2" id="kiText"></span>
 
                 </div>
 
                 <div class="column-center">
                     <span class="text-body-2">KD</span>
-                    <span class="title-4" id="kdText"></span>
+                    <span class="title-2" id="kdText"></span>
                 </div>
 
                 <div class="column-center">
                     <span class="text-body-2">Modo</span>
-                    <label class="title-4" id="isCollecting" name="isCollecting"></label>
+                    <label class="title-2" id="isCollecting" name="isCollecting"></label>
                 </div>
 
                 <div class="column-center">
                     <span class="text-body-2">Setpoint</span>
-                    <span class="title-4" id="setpointText"></span>
+                    <span class="title-2" id="setpointText"></span>
 
 
                 </div>
@@ -438,11 +379,10 @@
                         <span class="text-body-2">KD</span>
                         <input type="number" id="kd" name="kd">
                     </div>
-
+                    
 
                     <div class="column-center">
                         <span class="text-body-2">Modo</span>
-                        <span class="text-body-2">(Automático):</span>
                         <label class="container">
                             <input type="checkbox" id="mode" name="mode" checked="checked">
                             <span class="checkmark"></span>
@@ -473,8 +413,7 @@
 
             <div id="chartContainer"></div>
             <div id="chartContainerError"></div>
-            <div id="chartContainerActuador"></div>
-
+          
 
             <button class="button-default-primary" id="saveDataButton">Exportar Dados</button>
             <button class="button-default-secondary" id="clearButton">Limpar Gráfico</button>
@@ -493,11 +432,7 @@
 
         </div>
 
-
     </div>
-
-    <div class="baseboard-1"></div>
-     <div class="baseboard-2"></div>
 
 
 
@@ -517,25 +452,28 @@
             }
         }
 
-
+    
 
         function cancelEdit() {
             toggleEditMode(false);
         }
 
+        var routeControl = "http://192.168.0.110/labserver/control"
+        var routePlant = "http://192.168.0.110/labserver/plant"
+
         function saveDataAsTxt() {
-            fetch('http://localhost:6008/plant') // Substitua pela URL da API que retorna os dados
+            fetch(routePlant) // Substitua pela URL da API que retorna os dados
                 .then(response => response.json())
                 .then(data => {
                     // Formatar os dados como texto
                     let contentData = '';
                     let contentCabeçalho = 'TEMPO | ERROR | TEMPERATURE | SETPOINT \n'; // Cabeçalhos do arquivo
-
+                    
                     data.forEach(item => {
-                        contentData += `${item.t},${item.e},${item.tp},${item.s} \n`; // Formata tempo e temperatura
+                        contentData += `${item.t},${item.e},${item.t}, ${item.s} \n`; // Formata tempo e temperatura
                     });
 
-                    let content = contentCabeçalho + contentData;
+                    let content =  contentCabeçalho + contentData;
                     // Criar um blob com o conteúdo de texto
                     const blob = new Blob([content], { type: 'text/plain' });
 
@@ -551,7 +489,7 @@
         }
 
         function fetchValues() {
-            fetch('http://localhost:6008/control')
+            fetch(routeControl)
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('ki').value = data.ki;
@@ -590,7 +528,7 @@
                 m: mode
             };
 
-            fetch('http://localhost:6008/control', { // Substitua por sua URL de API
+            fetch(routeControl, { // Substitua por sua URL de API
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -608,7 +546,7 @@
 
         // Função para limpar os valores
         function clearValues() {
-            fetch('http://localhost:6008/plant', { // Substitua por sua URL de API para limpar
+            fetch(routePlant, { // Substitua por sua URL de API para limpar
                 method: 'DELETE'
             })
                 .then(response => response.json())
@@ -623,33 +561,27 @@
         }
 
         // Função para atualizar o gráfico com os dados da API
-        function updateChart(chart, chartError, chartActuator) {
-            fetch('http://localhost:6008/plant') // Substitua pela URL da API
+        function updateChart(chart, chartError) {
+            fetch(routePlant) // Substitua pela URL da API
                 .then(response => response.json())
                 .then(data => {
                     // Mapeia os dados para o formato necessário para o gráfico
                     const dataPointsTemperature = data.map(item => ({
-                        x: (item.t / 1000.0),
+                        x: item.t,
                         y: parseFloat(item.tp)
                     }));
 
                     const dataPointsError = data.map(item => ({
-                        x: (item.t / 1000.0),
+                        x: item.t,
                         y: parseFloat(item.e)
                     }));
 
-                    const dataPointsSetpoint = data.map(item => ({
-                        x: (item.t / 1000.0),
+                     const dataPointsSetpoint = data.map(item => ({
+                        x: item.t,
                         y: parseFloat(item.s)
                     }));
 
-
-                    const dataPointsActuador = data.map(item => ({
-                        x: (item.t / 1000.0),
-                        y: parseFloat(item.a)
-                    }));
-
-
+                     
 
 
                     chart.options.data[0].dataPoints = dataPointsTemperature;
@@ -657,12 +589,9 @@
                     chart.options.data[2].dataPoints = dataPointsSetpoint;
 
                     chartError.options.data[0].dataPoints = dataPointsError;
-
-                    chartActuator.options.data[0].dataPoints = dataPointsActuador;
-
+                   
 
                     chartError.render();
-                    chartActuator.render();
                     chart.render();
                 })
                 .catch(error => console.error('Erro ao atualizar o gráfico:', error));
@@ -699,7 +628,7 @@
         });
 
 
-        const chartError = new CanvasJS.Chart("chartContainerError", {
+         const chartError = new CanvasJS.Chart("chartContainerError", {
             zoomEnabled: true,
             title: {
                 text: "Erro ao Longo do Tempo"
@@ -716,29 +645,11 @@
             }]
         });
 
-        const chartActuator = new CanvasJS.Chart("chartContainerActuador", {
-            zoomEnabled: true,
-            title: {
-                text: "Atuador ao Longo do Tempo"
-            },
-            axisY: {
-                title: "Atuador"
-            },
-            data: [{
-                type: "line",
-                name: "Atuador",
-                showInLegend: true,
-                dataPoints: []
-
-            }]
-        });
-
         chart.render();
         chartError.render();
-        chartActuator.render();
 
         // Atualiza o gráfico a cada 1 segundo
-        setInterval(() => updateChart(chart, chartError, chartActuator), 1000);
+        setInterval(() => updateChart(chart, chartError), 1000);
 
 
         // Chamar fetchValues para carregar dados iniciais ao carregar a página
@@ -753,261 +664,5 @@
     </script>
 </body>
 
-</html>
-
-
-
-<script>
-    // Função para obter valores da API e preencher os campos
-
-
-    function toggleEditMode(showEdit) {
-        const viewMode = document.getElementById('viewMode');
-        const editMode = document.getElementById('editMode');
-
-        if (showEdit) {
-            viewMode.classList.add('hidden');
-            editMode.classList.remove('hidden');
-        } else {
-            viewMode.classList.remove('hidden');
-            editMode.classList.add('hidden');
-        }
-    }
-
-
-
-    function cancelEdit() {
-        toggleEditMode(false);
-    }
-
-    function saveDataAsTxt() {
-        fetch('http://localhost:6008/plant') // Substitua pela URL da API que retorna os dados
-            .then(response => response.json())
-            .then(data => {
-                // Formatar os dados como texto
-                let contentData = '';
-                let contentCabeçalho = 'TEMPO | ERROR | TEMPERATURE | SETPOINT \n'; // Cabeçalhos do arquivo
-
-                data.forEach(item => {
-                    contentData += `${item.t},${item.e},${item.tp},${item.s} \n`; // Formata tempo e temperatura
-                });
-
-                let content = contentCabeçalho + contentData;
-                // Criar um blob com o conteúdo de texto
-                const blob = new Blob([content], { type: 'text/plain' });
-
-                // Criar um link para download
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = 'dados_temperatura.txt'; // Nome do arquivo
-
-                // Clicar no link para iniciar o download
-                link.click();
-            })
-            .catch(error => console.error('Erro ao salvar dados:', error));
-    }
-
-    function fetchValues() {
-        fetch('http://localhost:6008/control')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('ki').value = data.ki;
-                document.getElementById('kp').value = data.kp;
-                document.getElementById('kd').value = data.kd;
-                document.getElementById('setpoint').value = data.s;
-                document.getElementById('mode').checked = data.m;
-
-
-                populateTextFields(data);
-            })
-            .catch(error => console.error('Erro ao obter dados:', error));
-    }
-
-    function populateTextFields(data) {
-        document.getElementById('kiText').textContent = data.ki;
-        document.getElementById('kpText').textContent = data.kp;
-        document.getElementById('kdText').textContent = data.kd;
-        document.getElementById('setpointText').textContent = data.s
-        document.getElementById('isCollecting').textContent = data.m ? "Automatico" : "Manual";
-    }
-
-    // Função para enviar os valores para a API
-    function sendValues() {
-        const ki = parseFloat(document.getElementById('ki').value); // Garante que é um número
-        const kp = parseFloat(document.getElementById('kp').value);
-        const kd = parseFloat(document.getElementById('kd').value);
-        const setpoint = parseFloat(document.getElementById('setpoint').value);
-        const mode = document.getElementById('mode').checked; // Retorna booleano
-
-        const data = {
-            ki: ki,
-            kd: kd,
-            kp: kp,
-            s: setpoint,
-            m: mode
-        };
-
-        fetch('http://localhost:6008/control', { // Substitua por sua URL de API
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Sucesso:', data);
-                fetchValues();
-            })
-            .catch(error => console.error('Erro ao enviar dados:', error));
-        toggleEditMode(false);
-    }
-
-    // Função para limpar os valores
-    function clearValues() {
-        fetch('http://localhost:6008/plant', { // Substitua por sua URL de API para limpar
-            method: 'DELETE'
-        })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('ki').value = '';
-                document.getElementById('kp').value = '';
-                document.getElementById('kd').value = '';
-                document.getElementById('mode').checked = false;
-                console.log('Campos limpos e API chamada:', data);
-            })
-            .catch(error => console.error('Erro ao limpar dados:', error));
-    }
-
-    // Função para atualizar o gráfico com os dados da API
-    function updateChart(chart, chartError, chartActuator) {
-        fetch('http://localhost:6008/plant') // Substitua pela URL da API
-            .then(response => response.json())
-            .then(data => {
-                // Mapeia os dados para o formato necessário para o gráfico
-                const dataPointsTemperature = data.map(item => ({
-                    x: (item.t / 1000.0),
-                    y: parseFloat(item.tp)
-                }));
-
-                const dataPointsError = data.map(item => ({
-                    x: (item.t / 1000.0),
-                    y: parseFloat(item.e)
-                }));
-
-                const dataPointsSetpoint = data.map(item => ({
-                    x: (item.t / 1000.0),
-                    y: parseFloat(item.s)
-                }));
-
-
-                const dataPointsActuador = data.map(item => ({
-                    x: (item.t / 1000.0),
-                    y: parseFloat(item.a)
-                }));
-
-
-
-
-                chart.options.data[0].dataPoints = dataPointsTemperature;
-                chart.options.data[1].dataPoints = dataPointsError;
-                chart.options.data[2].dataPoints = dataPointsSetpoint;
-
-                chartError.options.data[0].dataPoints = dataPointsError;
-
-                chartActuator.options.data[0].dataPoints = dataPointsActuador;
-
-
-                chartError.render();
-                chartActuator.render();
-                chart.render();
-            })
-            .catch(error => console.error('Erro ao atualizar o gráfico:', error));
-    }
-
-    // Inicializa o gráfico
-    const chart = new CanvasJS.Chart("chartContainer", {
-        zoomEnabled: true,
-        title: {
-            text: "Temperatura ao Longo do Tempo"
-        },
-        axisY: {
-            title: "Temperatura (°C)"
-        },
-        data: [{
-            type: "line",
-            showInLegend: true,
-            name: "Temperatura",
-            dataPoints: []
-        }, {
-            type: "line",
-            name: "Erro",
-            showInLegend: true,
-            dataPoints: []
-
-        },
-        {
-            type: "line",
-            name: "setpoint",
-            showInLegend: true,
-            dataPoints: []
-
-        }]
-    });
-
-
-    const chartError = new CanvasJS.Chart("chartContainerError", {
-        zoomEnabled: true,
-        title: {
-            text: "Erro ao Longo do Tempo"
-        },
-        axisY: {
-            title: "Error"
-        },
-        data: [{
-            type: "line",
-            name: "Erro",
-            showInLegend: true,
-            dataPoints: []
-
-        }]
-    });
-
-    const chartActuator = new CanvasJS.Chart("chartContainerActuador", {
-        zoomEnabled: true,
-        title: {
-            text: "Atuador ao Longo do Tempo"
-        },
-        axisY: {
-            title: "Atuador"
-        },
-        data: [{
-            type: "line",
-            name: "Atuador",
-            showInLegend: true,
-            dataPoints: []
-
-        }]
-    });
-
-    chart.render();
-    chartError.render();
-    chartActuator.render();
-
-    // Atualiza o gráfico a cada 1 segundo
-    setInterval(() => updateChart(chart, chartError, chartActuator), 1000);
-
-
-    // Chamar fetchValues para carregar dados iniciais ao carregar a página
-    fetchValues();
-
-    document.getElementById('editButton').addEventListener('click', () => toggleEditMode(true));
-    document.getElementById('sendButton').addEventListener('click', sendValues);
-    document.getElementById('cancelButton').addEventListener('click', cancelEdit);
-
-    document.getElementById('saveDataButton').addEventListener('click', saveDataAsTxt);
-    document.getElementById('clearButton').addEventListener('click', clearValues);
-</script>
-</body>
 
 </html>

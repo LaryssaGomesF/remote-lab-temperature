@@ -5,7 +5,7 @@ const control = require('../control/controlModel')
 class PlantModel {
 
     get() {
-        const sql = 'SELECT time, temperature, erro FROM plant_data';
+        const sql = 'SELECT t, tp, e, s, a FROM plant_data';
         return new Promise((resolve, reject) => {
             db.query(sql, {}, (error, resposta) => {
                 if (error) {
@@ -18,7 +18,7 @@ class PlantModel {
     }
 
     delete() {
-        const sql = 'DELETE FROM plant_data';
+        const sql = 'TRUNCATE TABLE plant_data';
         return new Promise((resolve, reject) => {
             db.query(sql, {}, (error, resposta) => {
                 if (error) {
@@ -34,13 +34,13 @@ class PlantModel {
     post(parameters) {
         // Consulta SQL para inserir ou atualizar valores
         const sql = `
-                    INSERT INTO plant_data (temperature, erro, time) 
-                    VALUES ( ?, ?, ?)
+                    INSERT INTO plant_data (tp, e, t, s, a) 
+                    VALUES ( ?, ?, ?, ?,?)
                     `;
 
         return new Promise((resolve, reject) => {
             // Executa a consulta com os parâmetros fornecidos
-            db.query(sql, [parameters.temperature, parameters.erro, parameters.time], (error, resposta) => {
+            db.query(sql, [parameters.tp, parameters.e, parameters.t, parameters.s, parameters.a], (error, resposta) => {
                 if (error) {
                     console.error("Erro ao inserir ou atualizar parâmetros:", error);
                     reject(error);

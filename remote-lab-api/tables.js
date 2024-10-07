@@ -10,9 +10,11 @@ class Tables {
         const sql = `
             CREATE TABLE IF NOT EXISTS plant_data(
             id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-            time INT,
-            temperature DOUBLE,
-            erro DOUBLE
+            t INT,
+            tp DOUBLE,
+            e DOUBLE,
+            s DOUBLE,
+            a DOUBLE
             );
         `;
         this.conexao.query(sql, (error) => {
@@ -26,18 +28,18 @@ class Tables {
     createTableControlConstants() {
         const sql = `
           CREATE TABLE IF NOT EXISTS control(
-            id INT NOT NULL PRIMARY KEY,
-            ki  DOUBLE ,
-            kd  DOUBLE ,
-            kp  DOUBLE ,
-            setpoint  DOUBLE ,
-            mode BOOLEAN DEFAULT FALSE
-          );
+          id INT NOT NULL PRIMARY KEY,
+          ki DOUBLE NOT NULL,
+          kd DOUBLE NOT NULL,
+          kp DOUBLE NOT NULL,
+          s DOUBLE NOT NULL,
+          m DOUBLE DEFAULT 0.0
+         );
         `;
       
         const checkIfRecordExistsSql = 'SELECT * FROM control WHERE id = 1';
         const insertInitialRecordSql = `
-          INSERT INTO control (id, ki, kd, kp, mode, setpoint) VALUES (1, 0.0, 0.0, 0.0, 0.0, FALSE)
+          INSERT INTO control (id, ki, kd, kp, m, s) VALUES (1, 0.0, 0.0, 0.0, 0.0, 0.0)
         `;
       
         this.conexao.query(sql, (error) => {

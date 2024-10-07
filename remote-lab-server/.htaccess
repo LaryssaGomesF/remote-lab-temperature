@@ -1,0 +1,11 @@
+RewriteEngine On
+RewriteBase /labserver/
+
+# Reescreve /dashboard para /views/dashboard.php
+RewriteRule ^dashboard/?$ views/dashboard.php [L]
+
+# Reescreve /plant para /plant/plantRoutes.php
+RewriteRule ^plant/?$ plant/plantRoutes.php [L]
+
+# Reescreve /control para /control/controlRoutes.php
+RewriteRule ^control/?$ control/controlRoutes.php [L]
