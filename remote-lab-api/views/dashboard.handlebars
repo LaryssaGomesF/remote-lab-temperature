@@ -504,6 +504,8 @@
     <script>
         // Função para obter valores da API e preencher os campos
 
+
+        const apiUrl = "{{apiUrl}}";
         function toggleEditMode(showEdit) {
             const viewMode = document.getElementById('viewMode');
             const editMode = document.getElementById('editMode');
@@ -524,7 +526,7 @@
         }
 
         function saveDataAsTxt() {
-            fetch('http://localhost:6008/plant') // Substitua pela URL da API que retorna os dados
+            fetch(`${apiUrl}/plant`) // Substitua pela URL da API que retorna os dados
                 .then(response => response.json())
                 .then(data => {
                     // Formatar os dados como texto
@@ -551,7 +553,7 @@
         }
 
         function fetchValues() {
-            fetch('http://localhost:6008/control')
+            fetch(`${apiUrl}/control`)
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('ki').value = data.ki;
@@ -590,7 +592,7 @@
                 m: mode
             };
 
-            fetch('http://localhost:6008/control', { // Substitua por sua URL de API
+            fetch(`${apiUrl}/control`, { // Substitua por sua URL de API
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -608,7 +610,7 @@
 
         // Função para limpar os valores
         function clearValues() {
-            fetch('http://localhost:6008/plant', { // Substitua por sua URL de API para limpar
+            fetch(`${apiUrl}/plant`, { // Substitua por sua URL de API para limpar
                 method: 'DELETE'
             })
                 .then(response => response.json())
@@ -624,7 +626,7 @@
 
         // Função para atualizar o gráfico com os dados da API
         function updateChart(chart, chartError, chartActuator) {
-            fetch('http://localhost:6008/plant') // Substitua pela URL da API
+            fetch(`${apiUrl}/plant`) // Substitua pela URL da API
                 .then(response => response.json())
                 .then(data => {
                     // Mapeia os dados para o formato necessário para o gráfico
@@ -781,7 +783,7 @@
     }
 
     function saveDataAsTxt() {
-        fetch('http://localhost:6008/plant') // Substitua pela URL da API que retorna os dados
+        fetch(`${apiUrl}/plant`) // Substitua pela URL da API que retorna os dados
             .then(response => response.json())
             .then(data => {
                 // Formatar os dados como texto
@@ -808,7 +810,7 @@
     }
 
     function fetchValues() {
-        fetch('http://localhost:6008/control')
+        fetch(`${apiUrl}/control`)
             .then(response => response.json())
             .then(data => {
                 document.getElementById('ki').value = data.ki;
@@ -847,7 +849,7 @@
             m: mode
         };
 
-        fetch('http://localhost:6008/control', { // Substitua por sua URL de API
+        fetch(`${apiUrl}/control`, { // Substitua por sua URL de API
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -865,7 +867,7 @@
 
     // Função para limpar os valores
     function clearValues() {
-        fetch('http://localhost:6008/plant', { // Substitua por sua URL de API para limpar
+        fetch(`${apiUrl}/plant`, { // Substitua por sua URL de API para limpar
             method: 'DELETE'
         })
             .then(response => response.json())
@@ -881,7 +883,7 @@
 
     // Função para atualizar o gráfico com os dados da API
     function updateChart(chart, chartError, chartActuator) {
-        fetch('http://localhost:6008/plant') // Substitua pela URL da API
+        fetch(`${apiUrl}/plant`) // Substitua pela URL da API
             .then(response => response.json())
             .then(data => {
                 // Mapeia os dados para o formato necessário para o gráfico

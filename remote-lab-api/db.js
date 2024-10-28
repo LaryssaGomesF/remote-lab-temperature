@@ -1,10 +1,11 @@
 const db = require("mysql2");
+require('dotenv').config();
 
 const conexao = db.createConnection({
-    host: 'localhost', //IP address 
-    user: 'root',
-    password: '2602',
-    database: 'remote-lab-db' // criar banco de dados no servidor ou depois mudar para automático
+    host: process.env.host, //IP address 
+    user: process.env.user,
+    password:  process.env.password,
+    database: process.env.database // criar banco de dados no servidor ou depois mudar para automático
 })
 
 module.exports = conexao;

@@ -42,7 +42,7 @@ app.use((error, req, res, next) => {
     });
 });
 
-app.listen(6008, function(){
-    console.log("Servidor rodando na url http://localhost:5000");
+app.listen(process.env.PORT, function(){
+   console.log("Servidor rodando na porta: " + process.env.PORT)
 })
 
