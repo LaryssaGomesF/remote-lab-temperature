@@ -107,7 +107,7 @@
             height: 100%;
 
         }
-    
+
 
         .column-center {
             display: flex;
@@ -122,6 +122,7 @@
             width: 100%;
             height: 100px;
         }
+
         .baseboard-1 {
             background-color: #333333;
             width: 100%;
@@ -168,17 +169,17 @@
 
 
         .title-2 {
-            font-family:  "Playfair Display";
+            font-family: "Playfair Display";
             font-size: 20px;
             color: #4A101D;
         }
 
-         .title-3 {
-            font-family:  "Playfair Display";
+        .title-3 {
+            font-family: "Playfair Display";
             font-size: 20px;
             color: #1f1e1e;
         }
-        
+
         .title-4 {
             font-family: "Bebas Neue";
             font-size: 35px;
@@ -345,6 +346,7 @@
     </style>
     <!-- Inclua o script CanvasJS -->
     <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 
 <body style="background:#F5F5F5">
@@ -354,11 +356,11 @@
         <div class="row-space-between">
 
             <img src="/imagens/logo-labcam.png" alt="Logo labcam" class="logo-image ">
-            
+
 
             <h1 class="title-1">Bancada Controle de Temperatura - LABCAM</h1>
 
-            <div class="row-auto " >
+            <div class="row-auto ">
                 <h1 class="title-2"> Dashboard</h1>
                 <div class="divider"></div>
                 <h1 class="title-3"> Tutorial</h1>
@@ -487,9 +489,17 @@
 
         <div class="card">
             <h1 class="title-1"> Imagem câmera </h1>
-            <div class="row-center">
-                <img src="https://via.placeholder.com/400x300" alt="Simulação da Câmera" class="camera-image">
-            </div>
+            <video id="video" controls autoplay width="640" height="360"></video>
+            <script>
+                const video = document.getElementById('video');
+                if (Hls.isSupported()) {
+                    const hls = new Hls();
+                    hls.loadSource('/hls/stream.m3u8');
+                    hls.attachMedia(video);
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = '/hls/stream.m3u8';
+                }
+            </script>
 
         </div>
 
@@ -497,7 +507,7 @@
     </div>
 
     <div class="baseboard-1"></div>
-     <div class="baseboard-2"></div>
+    <div class="baseboard-2"></div>
 
 
 
