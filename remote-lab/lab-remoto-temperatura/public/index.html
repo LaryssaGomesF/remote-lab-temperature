@@ -16,7 +16,6 @@
 
     <script src="/lab-remoto-temperatura/public/script.js" defer></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/rtsp-relay@1.3.0/browser.min.js"></script>
 
 </head>
 
@@ -136,24 +135,17 @@
 
                 <div class="divider-height"></div>
 
-
                 <button class="button-default-primary" id="sendButton">Enviar</button>
                 <button class="button-default-secondary " id="cancelButton">Cancelar</button>
 
-
-
             </div>
-
-
 
             <div id="chartContainer"></div>
             <div id="chartContainerError"></div>
             <div id="chartContainerActuador"></div>
 
-
             <button class="button-default-primary" id="saveDataButton">Exportar Dados</button>
             <button class="button-default-secondary" id="clearButton">Limpar Gráfico</button>
-
 
 
         </div>
@@ -162,47 +154,92 @@
 
         <div class="card">
             <h1 class="title-1"> Imagem câmera </h1>
-            <video id="video" controls autoplay width="640" height="360"></video>
-
-            <!-- Carrega a biblioteca corretamente da CDN -->
-            <script src="https://cdn.jsdelivr.net/npm/rtsp-relay@2.2.0/dist/browser/umd/index.min.js"></script>
-
+            <video id="videoPlayer" controls autoplay muted width="640" height="360"></video>
+            <div class="status" id="statusMessage">Carregando player...</div>
             <script>
-                // Configurações da câmera
-                const cameraConfig = {
-                    ip: '192.168.1.32',
-                    user: 'admin',
-                    password: 'LabcamBancadaTemp',
-                    channel: '1',
-                    subtype: '0'
-                };
+                const video = document.getElementById("videoPlayer");
+                const statusMessage = document.getElementById("statusMessage");
 
-                // URL RTSP formatada corretamente
-                const rtspUrl = `rtsp://${cameraConfig.user}:${cameraConfig.password}@${cameraConfig.ip}:554/cam/realmonitor?channel=${cameraConfig.channel}&subtype=${cameraConfig.subtype}`;
+                // Caminho RELATIVO para a playlist M3U8 a partir da raiz do seu site.
+                // Se stream_processor.php e player.html estão no mesmo diretório,
+                // e $output_dir = __DIR__ . '/stream_output';
+                // então o caminho seria 'stream_output/stream.m3u8'
+                const hlsUrl = 'stream_output/stream.m3u8'; // Ajuste este caminho!
 
-                // Verifica se a biblioteca foi carregada
-                if (typeof window.RTSPRelay === 'undefined') {
-                    console.error('Biblioteca RTSPRelay não carregada!');
-                    alert('Erro ao carregar o player de vídeo. Recarregue a página.');
+                // Verifica se o navegador suporta HLS nativamente (principalmente Safari)
+                if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = hlsUrl;
+                    statusMessage.textContent = "Usando suporte HLS nativo do navegador.";
+                    video.addEventListener('loadedmetadata', function () {
+                        console.log("Metadados carregados (nativo).");
+                        // Tenta iniciar a reprodução automaticamente
+                        video.play().catch(e => console.warn("Autoplay bloqueado pelo navegador (nativo):", e));
+                    });
+                    video.addEventListener('error', function (e) {
+                        statusMessage.textContent = `Erro ao carregar vídeo (nativo): ${e.message}`;
+                        console.error('Erro no player nativo:', e);
+                    });
+
+                    // Se não suporta nativamente, usa hls.js
+                } else if (Hls.isSupported()) {
+                    statusMessage.textContent = "Suporte HLS nativo não encontrado. Usando hls.js.";
+                    const hls = new Hls({
+                        // Configurações opcionais do HLS.js
+                        // debug: true, // Descomente para logs detalhados
+                        startLevel: -1, // Começa com a melhor qualidade
+                        capLevelToPlayerSize: true, // Ajusta a qualidade ao tamanho do player
+                    });
+
+                    hls.loadSource(hlsUrl);
+                    hls.attachMedia(video);
+
+                    hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                        console.log("Manifesto HLS carregado e parseado.");
+                        statusMessage.textContent = "Stream carregado. Tentando reproduzir...";
+                        // Tenta iniciar a reprodução automaticamente
+                        video.play().catch(e => {
+                            console.warn("Autoplay bloqueado pelo navegador (hls.js):", e);
+                            statusMessage.textContent = "Stream carregado. Clique em play para iniciar (autoplay bloqueado).";
+                        });
+                    });
+
+                    hls.on(Hls.Events.ERROR, function (event, data) {
+                        if (data.fatal) {
+                            switch (data.type) {
+                                case Hls.ErrorTypes.NETWORK_ERROR:
+                                    console.error("Erro fatal de rede:", data);
+                                    statusMessage.textContent = `Erro de rede ao carregar o stream: ${data.details}. Verifique o caminho do M3U8 e se o processo FFmpeg está rodando.`;
+                                    // Tentar recuperar?
+                                    // hls.startLoad();
+                                    break;
+                                case Hls.ErrorTypes.MEDIA_ERROR:
+                                    console.error("Erro fatal de mídia:", data);
+                                    statusMessage.textContent = `Erro de mídia: ${data.details}. O stream pode estar corrompido ou incompatível.`;
+                                    // Tentar recuperar?
+                                    // hls.recoverMediaError();
+                                    break;
+                                default:
+                                    console.error("Erro fatal não recuperável:", data);
+                                    statusMessage.textContent = `Erro HLS irrecuperável: ${data.details}.`;
+                                    hls.destroy();
+                                    break;
+                            }
+                        } else {
+                            console.warn("Erro HLS não fatal:", data);
+                            statusMessage.textContent = `Aviso HLS: ${data.details}`;
+                        }
+                    });
+
                 } else {
-                    try {
-                        const player = new window.RTSPRelay.Player({
-                            video: document.getElementById('video'),
-                            // Configurações otimizadas para Intelbras
-                            transport: 'tcp',
-                            withCredentials: false,
-                            // Tentativa de conexão direta (funciona em alguns navegadores)
-                            directPlay: true
-                        });
-
-                        player.load(rtspUrl).catch(err => {
-                            console.error("Falha na conexão:", err);
-                            alert(`Erro ao conectar à câmera:\n\n${err.message}\n\nVerifique:\n1. IP e credenciais\n2. Porta 554 aberta\n3. RTSP habilitado na câmera`);
-                        });
-                    } catch (e) {
-                        console.error("Erro ao iniciar player:", e);
-                    }
+                    statusMessage.textContent = "Seu navegador não suporta HLS nem com hls.js.";
+                    console.error("HLS não é suportado neste navegador.");
                 }
+
+                // Adiciona um listener para quando o vídeo começa a tocar
+                video.addEventListener('playing', () => {
+                    statusMessage.textContent = "Reproduzindo stream.";
+                    console.log("Vídeo começou a tocar.");
+                });
             </script>
         </div>
 
