@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player de Stream RTSP (HLS)</title>
+    <!-- Inclui a biblioteca HLS.js via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+            flex-direction: column;
+        }
+        #videoPlayer {
+            width: 80%;
+            max-width: 800px;
+            border: 1px solid #ccc;
+        }
+        .status {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Visualizador de Stream</h1>
+
+<video id="videoPlayer" controls muted autoplay></video>
+
+<div class="status" id="statusMessage">Carregando player...</div>
+
+<script>
+    const video = document.getElementById("videoPlayer");
+    const statusMessage = document.getElementById("statusMessage");
+
+    // Caminho RELATIVO para a playlist M3U8 a partir da raiz do seu site.
+    // Se stream_processor.php e player.html estão no mesmo diretório,
+    // e $output_dir = __DIR__ . '/stream_output';
+    // então o caminho seria 'stream_output/stream.m3u8'
+    const hlsUrl = 'stream_output/stream.m3u8'; // Ajuste este caminho!
+
+    // Verifica se o navegador suporta HLS nativamente (principalmente Safari)
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = hlsUrl;
+        statusMessage.textContent = "Usando suporte HLS nativo do navegador.";
+        video.addEventListener('loadedmetadata', function() {
+            console.log("Metadados carregados (nativo).");
+            // Tenta iniciar a reprodução automaticamente
+            video.play().catch(e => console.warn("Autoplay bloqueado pelo navegador (nativo):", e));
+        });
+        video.addEventListener('error', function(e) {
+            statusMessage.textContent = `Erro ao carregar vídeo (nativo): ${e.message}`;
+            console.error('Erro no player nativo:', e);
+        });
+
+    // Se não suporta nativamente, usa hls.js
+    } else if (Hls.isSupported()) {
+        statusMessage.textContent = "Suporte HLS nativo não encontrado. Usando hls.js.";
+        const hls = new Hls({
+            // Configurações opcionais do HLS.js
+            // debug: true, // Descomente para logs detalhados
+            startLevel: -1, // Começa com a melhor qualidade
+            capLevelToPlayerSize: true, // Ajusta a qualidade ao tamanho do player
+        });
+
+        hls.loadSource(hlsUrl);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, function() {
+            console.log("Manifesto HLS carregado e parseado.");
+            statusMessage.textContent = "Stream carregado. Tentando reproduzir...";
+            // Tenta iniciar a reprodução automaticamente
+            video.play().catch(e => {
+                console.warn("Autoplay bloqueado pelo navegador (hls.js):", e);
+                statusMessage.textContent = "Stream carregado. Clique em play para iniciar (autoplay bloqueado).";
+            });
+        });
+
+        hls.on(Hls.Events.ERROR, function(event, data) {
+            if (data.fatal) {
+                switch(data.type) {
+                    case Hls.ErrorTypes.NETWORK_ERROR:
+                        console.error("Erro fatal de rede:", data);
+                        statusMessage.textContent = `Erro de rede ao carregar o stream: ${data.details}. Verifique o caminho do M3U8 e se o processo FFmpeg está rodando.`;
+                        // Tentar recuperar?
+                        // hls.startLoad();
+                        break;
+                    case Hls.ErrorTypes.MEDIA_ERROR:
+                        console.error("Erro fatal de mídia:", data);
+                        statusMessage.textContent = `Erro de mídia: ${data.details}. O stream pode estar corrompido ou incompatível.`;
+                        // Tentar recuperar?
+                        // hls.recoverMediaError();
+                        break;
+                    default:
+                        console.error("Erro fatal não recuperável:", data);
+                        statusMessage.textContent = `Erro HLS irrecuperável: ${data.details}.`;
+                        hls.destroy();
+                        break;
+                }
+            } else {
+                 console.warn("Erro HLS não fatal:", data);
+                 statusMessage.textContent = `Aviso HLS: ${data.details}`;
+            }
+        });
+
+    } else {
+        statusMessage.textContent = "Seu navegador não suporta HLS nem com hls.js.";
+        console.error("HLS não é suportado neste navegador.");
+    }
+
+    // Adiciona um listener para quando o vídeo começa a tocar
+    video.addEventListener('playing', () => {
+        statusMessage.textContent = "Reproduzindo stream.";
+        console.log("Vídeo começou a tocar.");
+    });
+
+</script>
+
+</body>
+</html>
