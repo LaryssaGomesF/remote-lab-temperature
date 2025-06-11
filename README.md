@@ -5,7 +5,7 @@ Este tutorial irá guiá-lo passo a passo na configuração do ambiente de desen
 ## Pastas
 
 #### Pastas oficiais
-remote-lab > lab-remoto-temperatura - É o código que vamos copiar e utilizar para executar
+remote-lab > lab-remoto-temperatura - É o código final que vamos copiar e utilizar para executar
 
 
 simulação > Tem o código arduino e a montagem no picsimlab você pode executar simultâneamente caso queira testar a comunicação
