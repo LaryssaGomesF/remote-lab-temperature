@@ -1,6 +1,15 @@
 # Tutorial: Configurando e Executando o Projeto "lab-remoto-temperatura" Localmente
 
-Este tutorial irá guiá-lo passo a passo na configuração do ambiente de desenvolvimento necessário para executar o projeto "lab-remoto-temperatura" em sua máquina local. O projeto utiliza PHP para o backend e MySQL para o banco de dados, e será executado através do XAMPP.
+Este tutorial irá guiá-lo passo a passo na configuração do ambiente de desenvolvimento necessário para executar o projeto "lab-remoto-temperatura" em sua máquina local. O projeto utiliza PHP para o backend e MySQL para o banco de dados, HTML e CSS para o frontend e será executado através do XAMPP.
+
+## Pastas
+
+#### Pastas oficiais
+remote-lab > lab-remoto-temperatura - É o código que vamos copiar e utilizar para executar
+simulação > Tem o código arduino e a montagem no picsimlab você pode executar simultâneamente caso queira testar a comunicação
+
+#### Pastas com código teste
+remote-lab-api, remote-lab-server,teste-camera, teste-camera-php e sketch-aug17a - São códigos que foram desenvolvidos ao longo do projeto para alguns teste
 
 ## Pré-requisitos
 
