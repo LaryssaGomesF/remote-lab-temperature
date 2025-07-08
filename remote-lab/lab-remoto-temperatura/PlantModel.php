@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/ControlModel.php';
+
 class PlantModel {
 
     // Método para obter dados da tabela plant_data
@@ -53,7 +55,9 @@ class PlantModel {
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$parameters['tp'], $parameters['e'], $parameters['t'], $parameters['s'], $parameters['a']]);
 
-            return $this->get();
+            $controlModel = new ControlModel();
+            return $controlModel->get();
+
         } catch (PDOException $e) {
             return ['status' => 'error', 'message' => "Erro ao inserir dados: " . $e->getMessage()];
         }

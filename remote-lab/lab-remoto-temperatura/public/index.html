@@ -17,6 +17,7 @@
     <script src="/lab-remoto-temperatura/public/script.js" defer></script>
 
 
+
 </head>
 
 <body style="background:#F5F5F5">
@@ -164,7 +165,9 @@
                 // Se stream_processor.php e player.html estão no mesmo diretório,
                 // e $output_dir = __DIR__ . '/stream_output';
                 // então o caminho seria 'stream_output/stream.m3u8'
-                const hlsUrl = 'stream_output/stream.m3u8'; // Ajuste este caminho!
+           
+
+               const hlsUrl = 'stream_output/stream.m3u8';
 
                 // Verifica se o navegador suporta HLS nativamente (principalmente Safari)
                 if (video.canPlayType('application/vnd.apple.mpegurl')) {

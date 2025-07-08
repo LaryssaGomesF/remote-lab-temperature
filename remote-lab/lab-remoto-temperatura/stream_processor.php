@@ -28,6 +28,14 @@ if (!is_writable($output_dir)) {
 $output_playlist = $output_dir . '/stream.m3u8';
 $output_segment_pattern = rtrim($output_dir, '/\\') . '/segment_%03d.ts';
 
+// Limpa a pasta de saída ANTES de iniciar o FFmpeg
+$files = glob($output_dir . '/*');
+foreach ($files as $file) {
+    if (is_file($file)) {
+        unlink($file); // Deleta cada arquivo antigo
+    }
+}
+
 
 // --- Comando FFmpeg para converter RTSP para HLS ---
 

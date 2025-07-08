@@ -93,9 +93,10 @@ float controladorPI(float setpoint, float feedback, float Kp, float Ki, float T)
 }
 
 void net() { 
+ 
   if (client.connect(serverIP, serverPort)) {
-    //String postData = String("t=") + currentMillis + "&tp=" + temperatura + "&s=" + PWMLamp + "&e=" + E;
-    String postData = String("t=") + currentMillis + "&tp=" + 100 + "&s=" + 100 + "&e=" + 100 +"&a=" + 100;
+    String postData = String("t=") + currentMillis + "&tp=" + temperatura + "&s=" + PWMLamp + "&e=" + E + "&a=" + PWMLamp;
+    //String postData = String("t=") + currentMillis + "&tp=" + 100 + "&s=" + 100 + "&e=" + 100 +"&a=" + 100;
     String httpRequest = "POST /lab-remoto-temperatura/plant HTTP/1.1\r\n" 
                          "Host: " + String(serverIP) + "\r\n"
                          "Content-Type: application/x-www-form-urlencoded\r\n"
@@ -111,7 +112,7 @@ void net() {
         char c = client.read();
         response += c;
       }
-        Serial.println("Resposta recebida:");
+    Serial.println("Resposta recebida:");
     Serial.println(response);
 
       int jsonStart = response.indexOf('{');
@@ -127,6 +128,15 @@ void net() {
         //kd = doc["kd"];
         mode = doc["m"];         // Lê o valor de "kd"
         PWMLamp = doc["s"];
+        Serial.print("kp=");
+        Serial.print(kp);
+        Serial.print(" ki=");
+        Serial.print(ki);
+        Serial.print(" mode=");
+        Serial.print(mode);
+        Serial.print(" PWMLamp=");
+        Serial.println(PWMLamp);
+
 
       } else {       
         Serial.print("Erro ao parsear JSON: ");      
