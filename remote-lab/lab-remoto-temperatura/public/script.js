@@ -54,12 +54,14 @@ function fetchValues() {
             document.getElementById('kp').value = data.kp;
             document.getElementById('kd').value = data.kd;
             document.getElementById('setpoint').value = data.s;
-            document.getElementById('mode').checked = data.m;
+            document.getElementById('mode').checked = parseInt(data.m) === 1;
 
+            console.log("Dados recebidos do backend:", data);
 
             populateTextFields(data);
         })
         .catch(error => console.error('Erro ao obter dados:', error));
+     console.log('aqui')   
 }
 
 function populateTextFields(data) {
@@ -67,7 +69,8 @@ function populateTextFields(data) {
     document.getElementById('kpText').textContent = data.kp;
     document.getElementById('kdText').textContent = data.kd;
     document.getElementById('setpointText').textContent = data.s
-    document.getElementById('isCollecting').textContent = data.m ? "Automatico" : "Manual";
+    document.getElementById('isCollecting').textContent = parseInt(data.m) === 1 ? "Automático" : "Manual";
+
 }
 
 // Função para enviar os valores para a API

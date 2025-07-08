@@ -4,12 +4,12 @@
 
 //configurações ethernet
 byte mac[] = { 0x54, 0x34, 0x41, 0x30, 0x30, 0x31 }; 
-IPAddress ip(192, 168, 0, 145);          
+IPAddress ip(192, 168, 1, 145);          
 EthernetClient client;
 
 //variaveis para ethernet
-const char* serverIP = "192.168.0.110";  // IP do servidor local
-const int serverPort = 6008;             // Porta do servidor
+const char* serverIP = "192.168.1.25";  // IP do servidor local
+const int serverPort = 80;             // Porta do servidor
 
 //pinos 
 #define pCONTROLE 3  // Define o pino digital 3 do Arduino como o pino de controle do sinal PWM do cooler
@@ -23,7 +23,7 @@ const int LM35_3 = A7;
 
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   Ethernet.begin(mac, ip);
   delay(10);
   pinMode(pCONTROLE, OUTPUT);
@@ -94,14 +94,16 @@ float controladorPI(float setpoint, float feedback, float Kp, float Ki, float T)
 
 void net() { 
   if (client.connect(serverIP, serverPort)) {
-    String postData = String("t=") + currentMillis + "&tp=" + temperatura + "&s=" + PWMLamp + "&e=" + E;
-    String httpRequest = "POST /plant HTTP/1.1\r\n" 
+    //String postData = String("t=") + currentMillis + "&tp=" + temperatura + "&s=" + PWMLamp + "&e=" + E;
+    String postData = String("t=") + currentMillis + "&tp=" + 100 + "&s=" + 100 + "&e=" + 100 +"&a=" + 100;
+    String httpRequest = "POST /lab-remoto-temperatura/plant HTTP/1.1\r\n" 
                          "Host: " + String(serverIP) + "\r\n"
                          "Content-Type: application/x-www-form-urlencoded\r\n"
                          "Content-Length: " + String(postData.length()) + "\r\n"
                          "Connection: close\r\n\r\n" + postData;
     client.print(httpRequest);
-    delay(10);
+    Serial.println(httpRequest);
+    delay(1000);
 
     if (client.connected()) {
       String response = "";
@@ -109,6 +111,8 @@ void net() {
         char c = client.read();
         response += c;
       }
+        Serial.println("Resposta recebida:");
+    Serial.println(response);
 
       int jsonStart = response.indexOf('{');
       if (jsonStart != -1) {
@@ -124,7 +128,9 @@ void net() {
         mode = doc["m"];         // Lê o valor de "kd"
         PWMLamp = doc["s"];
 
-      } 
+      } else {       
+        Serial.print("Erro ao parsear JSON: ");      
+      }
     } 
     client.stop();  // Fecha a conexão
     Serial.println("Conexão fechada.");

@@ -1,23 +1,32 @@
 <?php
 class ControlModel {
     // Método para obter dados da tabela control
-    public function get() {
-        $sql = 'SELECT ki, kd, kp, s, m FROM control';
-        try {
-            // Conexão com o banco de dados (mesmas credenciais do PlantModel)
-            $pdo = new PDO('mysql:host=localhost;dbname=remote-lab-db', 'root', '2602');
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+   public function get() {
+    $sql = 'SELECT ki, kd, kp, s, m FROM control';
+    try {
+        $pdo = new PDO('mysql:host=localhost;dbname=remote-lab-db', 'root', '2602');
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-            // Preparar e executar a consulta
-            $stmt = $pdo->query($sql);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC); // Usamos fetch() pois esperamos apenas uma linha
+        $stmt = $pdo->query($sql);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            return $result ? $result : [];
-        } catch (PDOException $e) {
-            error_log("Erro ao recuperar dados de controle: " . $e->getMessage());
-            return [];
+        if ($result) {
+            return [
+                'ki' => (float) $result['ki'],
+                'kd' => (float) $result['kd'],
+                'kp' => (float) $result['kp'],
+                's'  => (float) $result['s'],
+                'm'  => (int) $result['m']
+            ];
         }
+
+        return [];
+    } catch (PDOException $e) {
+        error_log("Erro ao recuperar dados de controle: " . $e->getMessage());
+        return [];
     }
+}
+
 
     // Método para atualizar parâmetros de controle
     public function post($params) {
@@ -37,8 +46,9 @@ class ControlModel {
                 ':kd' => $params['kd'] ?? 0,
                 ':kp' => $params['kp'] ?? 0,
                 ':s'  => $params['s'] ?? 0,
-                ':m'  => $params['m'] ?? 0
+                ':m'  => isset($params['m']) ? ($params['m'] ? 1 : 0) : 0
             ]);
+
 
             return ['success' => true];
         } catch (PDOException $e) {
