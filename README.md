@@ -176,6 +176,9 @@ Você mencionou que o arquivo `db.php` contém as credenciais do banco de dados.
 
     **Observação:** Se o seu usuário `root` do MySQL tiver uma senha, certifique-se de atualizar a linha `$pass = "";` com a senha correta.
 
+### 4.3 Configurar o ip do servidor no arduino
+
+
 ## 5. Execução e Teste do Projeto
 
 Com os arquivos no lugar e as credenciais configuradas, é hora de testar se tudo está funcionando corretamente.
